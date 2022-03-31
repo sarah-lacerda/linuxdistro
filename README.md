@@ -92,6 +92,132 @@ Apos isso, podemos iniciar a compilação do sistema
 
 `$ make`
 
+### 1.4 Configurações dos scripts para inicializaçao da rede
+
+No diretório buildroot/, criaremos um diretório chamado ´custom-scripts´, com o objetivo de manter scripts de configuração personalizados:
+
+  ´´´
+  $ mkdir custom-scripts
+  ´´´
+Iniciaremos criando um arquivo denominado ´qemu-ifup´ com o conteúdo abaixo no diretório custom-scripts: 
+
+´´´
+#!/bin/sh
+set -x
+
+switch=br0
+
+if [ -n "$1" ];then
+        ip tuntap add $1 mode tap user `whoami`		#create tap network interface
+        ip link set $1 up				#bring interface tap up
+        sleep 0.5s					#wait the interface come up.
+        sysctl -w net.ipv4.ip_forward=1                 # allow forwarding of IPv4
+	route add -host 192.168.1.10 dev $1 		# add route to the client
+        exit 0
+else
+        echo "Error: no interface specified"
+        exit 1
+fi
+´´´
+
+Esse script irá habilitar uma interface rede tap (virtual) para o sistema guest.
+
+Em seguida, precisaremos configurar a interface de rede do sistema guest para se comunicar com o sistema host. Para isso, crie um script chamado ´S41network-config´ com o conteudo abaixo, substituindo <IP-DO-HOST> pelo ipv4 da máquina host:
+
+´´´
+#!/bin/sh
+#
+# Configuring host communication.
+#
+
+case "$1" in
+  start)
+	printf "Configuring host communication."
+	
+	/sbin/ifconfig eth0 192.168.1.10 up
+	/sbin/route add -host <IP-DO-HOST> dev eth0
+	/sbin/route add default gw <IP-DO-HOST>
+	[ $? = 0 ] && echo "OK" || echo "FAIL"
+	;;
+  stop)
+	printf "Shutdown host communication. "
+	/sbin/route del default
+	/sbin/ifdown -a
+	[ $? = 0 ] && echo "OK" || echo "FAIL"
+	;;
+  restart|reload)
+	"$0" stop
+	"$0" start
+	;;
+  *)
+	echo "Usage: $0 {start|stop|restart}"
+	exit 1
+esac
+
+exit $?
+´´´
+
+Crie mais um arquivo denominado ´pre-build.sh´, com o conteúdo abaixo: 
+
+´´´
+#!/bin/sh
+cp $BASE_DIR/../custom-scripts/S41network-config $BASE_DIR/target/etc/init.d
+chmod +x $BASE_DIR/target/etc/init.d/S41network-config
+	
+´´´
+	
+O script acima será copiado para o diretório /etc/init.d (no sistema de arquivos do guest) antes do build da distribuição e será executado durante a inicialização do sistema.
+	
+Por fim, de permissão de execução para o script pre-build.sh. 
+	
+´´´chmod +x custom-scripts/pre-build.sh
+´´´
+
+* Desativar a configuração DHCP da interface de rede (como feito em aula)
+* Configurar a porta TTY para ttyS0 (como feito em aula)
+
+    System configuration  ---> 
+  	 ()  Network interface to configure through DHCP
+  	 [*] Run a getty (login prompt) after boot  --->
+  		  (ttyS0) TTY port
+ 
+* Configurar o Buildroot para executar o script (`pre-build.sh`) antes da geração da imagem do rootfs. Esse script sera criado e adicionado no proximo passo e sera necessário para configurar as configurações de rede da maquina guest durante a inicializacao. (mais sobre isso na seção 3)
+
+    System configuration  --->
+    	(custom-scripts/pre-build.sh) Custom scripts to run before creating filesystem images
+
+* Habilitar suporte WCHAR. Como estamos utilizando Python, será necessário habilitar o suporte WCHAR para tornar possível a codificação de strings UTF-16
+
+    Toolchain  ---> 
+  		  [*] Enable WCHAR support
+
+* Incluir Python3 à distribuição: Como mencionado anteriormente, iremos fazer a implementação do servidor WEB utilizando a linguagem de programação Python. Para isso, precisaremos incluir o interpretador da Linguagem em nossa distribuição do Linux.
+
+    Target packages  ---> 
+  	     Interpreter languages and scripting  --->
+  		  [*] python3
+
+Saia do menu de configurações salvando essas opções.
+
+A seguir, entraremos no menu de configuraciones do kernel Linux:
+
+`$ make linux-menuconfig`
+
+Aqui faremos as seguintes customizações:
+
+* Habilitar o driver Ethernet e1000 (como feito em aula)
+
+  Device Drivers  ---> 
+  	[*] Network device support  --->    
+  		[*]   Ethernet driver support  ---> 
+  		<*>     Intel(R) PRO/1000 Gigabit Ethernet support
+  		
+Saia do menu de configurações salvando essas opções.
+
+Apos isso, podemos iniciar a compilação do sistema
+
+`$ make`
+
 ## 2. Iniciando a emulação
 
 Apos a finalização da compilação, podemos seguir para a emulação da distribuição recém compilada:
