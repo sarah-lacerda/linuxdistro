@@ -27,13 +27,13 @@ Como já mencionado, iremos fazer uso da versão 2022.02 do Buildroot, portanto 
 
 1. Fazer download da versão 2022.02 diretamente do site oficial (buildroot.org)
 
-```
+``` bash
 $ wget --no-check-certificate https://buildroot.org/downloads/buildroot-2022.02.tar.gz
 ```
 
 2. Descompactar o arquivo baixado para o diretório `linuxdistro` e renomear o diretório extraído para `buildroot`
 
-```
+``` bash
 $ tar -zxvf buildroot-2022.02.tar.gz
 $ mv buildroot-2022.02/ buildroot/
 ```
@@ -42,7 +42,7 @@ $ mv buildroot-2022.02/ buildroot/
 
 Assim como também mencionado anteriormente, iremos gerar uma distribuição para plataformas x86 para emulação com o QEMU, portanto iremos configurar o Buildroot para tal:
 
-```
+``` bash
 $ make qemu_x86_defconfig
 ```
 
@@ -50,13 +50,13 @@ $ make qemu_x86_defconfig
 
 No diretório buildroot/, criaremos um diretório chamado `custom-scripts`, com o objetivo de manter scripts de configuração personalizados:
 
-```
+``` bash
 $ mkdir custom-scripts
 ```
 
 Iniciaremos criando um arquivo denominado `qemu-ifup` com o conteúdo abaixo no diretório custom-scripts: 
 
-```
+``` bash
 #!/bin/sh
 set -x
 
@@ -80,7 +80,7 @@ Esse script irá habilitar uma interface de rede tap (virtual) para o sistema gu
 
 Em seguida, precisaremos configurar a interface de rede do sistema guest para se comunicar com o sistema host, este script precisará ser chamado toda a vez que os sistema da máquina guest for iniciado. Para isso, crie também um script chamado `S41network-config` com o conteúdo abaixo, substituindo `<IP-DO-HOST>` pelo ipv4 da máquina host:
 
-```
+``` bash
 #!/bin/sh
 #
 # Configuring host communication.
@@ -120,7 +120,7 @@ Por fim, criaremos mais um arquivo denominado `pre-build.sh`. No próximo passo,
 
 
 Copie o conteúdo abaixo:
-```
+``` bash
 #!/bin/sh
 cp $BASE_DIR/../custom-scripts/S41network-config $BASE_DIR/target/etc/init.d
 chmod +x $BASE_DIR/target/etc/init.d/S41network-config
@@ -131,13 +131,13 @@ cp $BASE_DIR/../custom-scripts/server/* $BASE_DIR/target/root
 	
 Por fim, de permissão de execução para o script pre-build.sh. 
 	
-```
+``` bash
 $ chmod +x custom-scripts/pre-build.sh
 ```
 
 Agora vamos adicionar o diretório `server` que conterá os arquivos necessários para a execução do servidor WEB, você pode copia-los do repositório do Github ou copiar os snippets diretamente deste tutorial na seção [Servidor HTTP](https://github.com/sarah-lacerda/linuxdistro/tree/tp1#servidor-http) e colocalos dentro de uma nova pasta `server` dentro de `custom-scripts`
 
-```
+``` bash
 $ mkdir custom-scripts/server
 ```
 
@@ -145,7 +145,7 @@ $ mkdir custom-scripts/server
 
 Aqui faremos as seguintes customizações através da interface de configuração do Buildroot:
 
-```
+``` bash
 $ make menuconfig
 ```
 
@@ -182,7 +182,7 @@ $ make menuconfig
 
 Saia do menu de configurações salvando essas opções.
 
-```
+``` bash
 $ make linux-menuconfig
 ```
 
@@ -201,7 +201,7 @@ Saia do menu de configurações salvando essas opções.
 
 Após isso, podemos iniciar a compilação do sistema
 
-```
+``` bash
 $ make
 ```
 
@@ -213,13 +213,13 @@ Após a finalização da compilação, podemos seguir para a emulação da distr
 
 1. Monte a imagem do sistema de arquivos em sua máquina alvo:
 
-```
+``` bash
 $ mount -o loop output/images/rootfs.ext2 ../rootfs/
 ```
 
 2. Execute o comando abaixo para iniciar a emulação:
 
-```
+``` bash
 $ sudo qemu-system-i386 --device e1000,netdev=eth0,mac=aa:bb:cc:dd:ee:ff \
 --netdev tap,id=eth0,script=custom-scripts/qemu-ifup \
 --kernel output/images/bzImage \
@@ -231,13 +231,13 @@ $ sudo qemu-system-i386 --device e1000,netdev=eth0,mac=aa:bb:cc:dd:ee:ff \
 
 Caso o comando qemu-system-i386 não seja encontrado, será necessário instalar o QEMU no sistema host:
 
-```
+``` bash
 $ sudo apt-get install qemu-system
 ```
 
 **Para encerrar o QUEMU, abra outro terminal e execute:**
 
-```
+``` bash
 $ killall qemu-system-i386
 ```
 
@@ -245,7 +245,7 @@ $ killall qemu-system-i386
 
 Apos ter iniciado a emulação do sistema e logado com sucesso, liste os arquivos presentes no diretório do root:
 
-```
+``` bash
 # ls
 cpustat.py   cpustat.pyc  index.html   server.py
 ```
@@ -256,14 +256,14 @@ Para iniciar o servidor e começar a escutar por requisições, execute o script
 
 *O servidor estará escutando na porta 8080
 
-```
+``` bash
 # python server.py
 
 ```
 
 Agora experimente acessar o servidor no navegador ou através do comando curl:
 
-```
+``` bash
 $ curl <IP_MAQUINA_GUEST>:8080
 ```
 
@@ -274,7 +274,7 @@ Nota: Você pode verificar o IP da maquina guest através so comando `ifconfig`
 O servidor HTTP utiliza 3 arquivos para a execução dos requerimentos deste trabalho:
 
 * `index.html`: É a template da pagina HTML que será mostrada ao chamar o servidor, essa template será utilizada e preenchida pela aplicacao para mostrar os dados dinâmicos solicitados.
-```
+``` html
 <!DOCTYPE html>
 <html>
 <head>
@@ -301,7 +301,7 @@ p {font-family:Georgia, serif;font-size:14px;font-style:normal;font-weight:norma
 </html>
 ```
 * `server.py`: Implementa o servidor http e serve na porta designada em código. Tambem carrega a template `index.html` e preenche com as informações obtidas do sistema. :
-```
+``` python
 import http.server
 import os.path
 import re
@@ -379,7 +379,7 @@ server = http.server.HTTPServer(('0.0.0.0', 8080), Handler)
 server.serve_forever()
 ```
 * `cpustat`: Script fornecido no enunciado do trabalho para calcular a porcentagem de consumo da CPU a partir das informações presentes no arquivo `/proc/stat`
-```
+``` python
 #!/usr/bin/python 
 # -*- coding: utf-8 -*-
 
