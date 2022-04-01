@@ -300,8 +300,6 @@ p {font-family:Georgia, serif;font-size:14px;font-style:normal;font-weight:norma
 %s
 </body>
 </html>
-
-
 ```
 * `server.py`: Implementa o servidor http e serve na porta designada em código. Tambem carrega a template `index.html` e preenche com as informações obtidas do sistema. :
 ``` python
@@ -489,7 +487,6 @@ if __name__=='__main__':
         except KeyboardInterrupt:
 
             sys.exit("Finished")    
-
 ```
 
 
