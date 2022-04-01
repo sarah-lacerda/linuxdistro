@@ -135,7 +135,7 @@ Por fim, de permissão de execução para o script pre-build.sh.
 $ chmod +x custom-scripts/pre-build.sh
 ```
 
-Agora vamos adicionar o diretório `server` que conterá os arquivos necessários para a execução do servidor WEB, você pode copia-los do repositório do Github ou copiar os snippets diretamente deste tutorial na seção [Servidor HTTP](https://github.com/sarah-lacerda/linuxdistro/edit/tp1/README.md#servidor-http) e colocalos dentro de uma nova pasta `server` dentro de `custom-scripts`
+Agora vamos adicionar o diretório `server` que conterá os arquivos necessários para a execução do servidor WEB, você pode copia-los do repositório do Github ou copiar os snippets diretamente deste tutorial na seção [Servidor HTTP](https://github.com/sarah-lacerda/linuxdistro/tree/tp1#servidor-http) e colocalos dentro de uma nova pasta `server` dentro de `custom-scripts`
 
 ```
 $ mkdir custom-scripts/server
