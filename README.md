@@ -241,7 +241,7 @@ $ sudo apt-get install qemu-system
 $ killall qemu-system-i386
 ```
 
-## 2. Iniciando o servidor WEB
+## 3. Iniciando o servidor WEB
 
 Apos ter iniciado a emulação do sistema e logado com sucesso, liste os arquivos presentes no diretório do root:
 
@@ -269,7 +269,7 @@ $ curl <IP_MAQUINA_GUEST>:8080
 
 Nota: Você pode verificar o IP da maquina guest através so comando `ifconfig`
 
-## Servidor HTTP
+# Servidor HTTP
 
 O servidor HTTP utiliza 3 arquivos para a execução dos requerimentos deste trabalho:
 
