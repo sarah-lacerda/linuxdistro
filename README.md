@@ -263,6 +263,8 @@ Para iniciar o servidor e começar a escutar por requisições, execute o script
 
 Agora experimente acessar o servidor no navegador ou através do comando curl:
 
+![html page as seen on browser](docs/html_page.png)
+
 ``` bash
 $ curl <IP_MAQUINA_GUEST>:8080
 ```
