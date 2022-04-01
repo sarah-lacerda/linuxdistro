@@ -68,7 +68,6 @@ class MyHandler(http.server.BaseHTTPRequestHandler):
 
         message = htmlTemplate % (getSystemInfo())
         self.wfile.write(message.encode())
-#        self.wfile.close()
 
 
 Handler = MyHandler
