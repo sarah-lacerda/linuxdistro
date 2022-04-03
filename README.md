@@ -38,7 +38,7 @@ $ tar -zxvf buildroot-2022.02.tar.gz
 $ mv buildroot-2022.02/ buildroot/
 ```
 
-### 1.2 Configuração arquitetura
+### 1.2 Configuração da arquitetura
 
 Assim como também mencionado anteriormente, iremos gerar uma distribuição para plataformas x86 para emulação com o QEMU, portanto iremos configurar o Buildroot para tal:
 
@@ -135,7 +135,7 @@ Por fim, de permissão de execução para o script pre-build.sh.
 $ chmod +x custom-scripts/pre-build.sh
 ```
 
-Agora vamos adicionar o diretório `server` que conterá os arquivos necessários para a execução do servidor WEB, você pode copia-los do repositório do Github ou copiar os snippets diretamente deste tutorial na seção [Servidor HTTP](https://github.com/sarah-lacerda/linuxdistro/tree/tp1#servidor-http) e colocalos dentro de uma nova pasta `server` dentro de `custom-scripts`
+Agora vamos adicionar o diretório `server` que conterá os arquivos necessários para a execução do servidor WEB, você pode copia-los do repositório do Github ou copiar os snippets diretamente deste tutorial na seção [Servidor HTTP](https://github.com/sarah-lacerda/linuxdistro/tree/tp1#servidor-http) e colocá-los dentro de uma nova pasta `server` dentro de `custom-scripts`
 
 ``` bash
 $ mkdir custom-scripts/server
@@ -235,7 +235,7 @@ Caso o comando qemu-system-i386 não seja encontrado, será necessário instalar
 $ sudo apt-get install qemu-system
 ```
 
-**Para encerrar o QUEMU, abra outro terminal e execute:**
+**Para encerrar o QEMU, abra outro terminal e execute:**
 
 ``` bash
 $ killall qemu-system-i386
@@ -269,7 +269,7 @@ Agora experimente acessar o servidor no navegador ou através do comando curl:
 $ curl <IP_MAQUINA_GUEST>:8080
 ```
 
-Nota: Você pode verificar o IP da maquina guest através so comando `ifconfig`
+Nota: Você pode verificar o IP da maquina guest através do comando `ifconfig`
 
 # Servidor HTTP
 
@@ -290,8 +290,7 @@ p {font-family:Georgia, serif;font-size:14px;font-style:normal;font-weight:norma
 </style>
 </head>
 <body>
-<h1></h1>
-<p>Date: %s
+<p>Date: %s</p>
 <p>Time: %s</p>
 <p>Uptime (seconds): %s</p>
 <p>CPU: %s</p>
