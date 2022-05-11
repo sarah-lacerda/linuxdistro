@@ -1,0 +1,1 @@
+cmd_/home/sarah-lacerda/repos/buildroot/modules/hello/built-in.o :=  rm -f /home/sarah-lacerda/repos/buildroot/modules/hello/built-in.o; ar rcSTPD /home/sarah-lacerda/repos/buildroot/modules/hello/built-in.o
