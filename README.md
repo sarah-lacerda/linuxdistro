@@ -67,7 +67,8 @@ A variável `min_blk_distance` é usada para encontrar a distãncia mínima que 
 Para cada request então presente em nossa fila de requisições, calculamos a distância entre a posição atual do cabeçote e a posição a ser acessada na requisição em questão, com a seguinte fórmula:
 
 
-```abs(blk_rq_pos(rq) - last_blk_pos_dispatched)
+``` math
+abs(blk_rq_pos(rq) - last_blk_pos_dispatched)
 ```
 
 - A função `blk_rq_pos(..)` é utilizada para obter a posição de um request, passando o mesmo por parâmetro.
