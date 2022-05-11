@@ -171,7 +171,7 @@ $ cd ../..
 $ make
 ```
 
-3- Será necessário criar um arquivo que servirá como disco de testes parao escalonador. Esse disco de testes não irá conter um sistema de arquivos (filesystem) válido. Iremos usar o comando `dd` para criar um arquivo, usando como entrada `/dev/zero` e como saída o arquivo `sdb.bin`. O parâmetro `bs` é o `block size`, ou seja, o tamanho de cada bloco de dados. Enquanto que `count` é a quantidade de blocos copiados. Assim, 512*2097152=1GB.
+3- Será necessário criar um arquivo que servirá como disco de testes para o escalonador. Esse disco de testes não irá conter um sistema de arquivos (filesystem) válido. Iremos usar o comando `dd` para criar um arquivo, usando como entrada `/dev/zero` e como saída o arquivo `sdb.bin`. O parâmetro `bs` é o `block size`, ou seja, o tamanho de cada bloco de dados. Enquanto que `count` é a quantidade de blocos copiados. Assim, 512*2097152=1GB.
 No diretório do Buildroot, execute: 
 
 ``` bash
@@ -194,14 +194,14 @@ A imagem de disco será acessada através do dispositivo `/dev/sdb`.
 
 5- Agora precisamos carregar o nosso modulo escalonador
 ``` bash
-$ modprobe sstf-iosched
+# modprobe sstf-iosched
 ```
 
 6- Feito isso, já podemos configurar o sistema para fazer uso do nosso novo escalonador.
 O comando abaixo deve listar o nosso novo escalonador
 
 ``` bash
-$ cat /sys/block/sdb/queue/scheduler
+# cat /sys/block/sdb/queue/scheduler
 noop deadline [cfq] sstf
 ```
 
@@ -210,35 +210,45 @@ O algoritmo em execução é apresentado entre colchetes. Obtenha mais informaç
 Para trocar de algoritmo basta efetuar o comando abaixo, com o nome do nosso algoritmo desejado (`sstf`):
 
 ``` bash
-$ echo sstf > /sys/block/sdb/queue/scheduler
+# echo sstf > /sys/block/sdb/queue/scheduler
 ```
 
 Verifique se o comando funcionou:
 
 ``` bash
-$ cat /sys/block/sdb/queue/scheduler
+# cat /sys/block/sdb/queue/scheduler
 noop deadline cfq [sstf] 
 `bash`
 
-6- Feito isso, podemos seguir para a execucao do nosso programa de testes `sector_read`, que foi compilado e copiado para o diretório `/bin` do systema:
+6- Feito isso, podemos seguir para a execução do nosso programa de testes `sector_read`, que foi compilado e copiado para o diretório `/bin` do sistema:
 
 ``` bash
 $ sector_read
 ```
 
+No nosso algoritmo escalonador, adicionamos as chamadas de sistema `printk(...)` para logar nos logs do kernel quando uma requisição era adicionada e despachada. O programa `sector_read` já reflete os logs dessas chamadas em sua execução, mas caso quisessemos vizualiza-los novamente, bastaria ler do arquivo `/var/log/messages` onde são logadas as mensagens do kernel.
+
 
 # Avaliação de desempenho
 
+Com as mensagens do kernel geradas a partir da execução do escalonador, é possível fazermos a análise de desempenho do algoritmo implementado, quando comparado com uma implementação "First Come First Served". Para isso, foram feitos gráficos que representam a ordem da adição das requisições à fila (que representam como seria o tratamento das requisições por um algoritmo FCFS) e a ordem da execução das requisições pelo algoritmo implementado. Para a amostra demonstrada abaixo, a aplicação de testes foi executada com o valor de `FORKS=4`, ou seja, executando 4 subprocessos adicionais simultaneos para adicionar estresse nas leituras do disco. Os gráficos se encontram nas figuras abaixo, e estão juntadas ao repositório. A análise visual dos gráficos já traz a intuição de que as posições das requisições servidas pelo algoritmo implementado são muito mais próximas uma da outra do que seriam no caso do algoritmo FCFS. As seções do gráfico DSC onde há sequencias que não foram servidas necessáriamente na menor ordem significam que não havia nenhuma requisição adicionada na fila naquele momento especifico.
+
+As saídas utilizadas para a geração dos gráficos abaixo estão juntadas nesse reposítório, no diretório raiz, nomeadas como [add.txt](add.txt) para a sequencia de saídas representando as adições de requisições na fila e [dsp.txt](dsp.txt) para a sequencia de saídas representando os despachos (atendimentos) das requisições da fila.
+
+### Ordem de adições (semlhante a ordem de um algoritmo FCFS)
+![ADD](add.png)
+
+### Ordem de despacho (escalonamento SSTF)
+![DSP](dsp.png)
 
 
-Com a saída da execução do sector_read, é possível fazermos a análise de desempenho do algoritmo implementado, quando comparado com uma implementação First Come First Served. Para isso, foram feitos gráficos que representam a ordem da adição das requisições à fila (que representam como seria o tratamento das requisições por um algoritmo FCFS) e a ordem da execução das requisições pelo algoritmo implementado. Os gráficos se encontram nas figuras X e Y, juntadas ao repositório. A análise visual dos gráficos já traz a intuição de que as posições das requisições servidas pelo algoritmo implementado são muito mais próximas uma da outra do que seriam no caso do algoritmo FCFS.
+Para formalizar a intuição em um parâmetro objetivo, foi calculado a distância total percorrida pelo cabeçote para cada um dos algoritmos. A distãncia total para o FCFS foi de 116618744, enquanto para o algoritmo SSTF implementado foi de 33607128. Ou seja, o FCFS exigiu ~= 3,47 vezes mais trabalho do que o algoritmo SSTF implementado.
 
 
-
-Para formalizar a intuição em um parâmetro objetivo, foi calculado a distância total percorrida pelo cabeçote para cada um dos algoritmos. A distãncia total para o FCFS foi de X, enquanto para o algoritmo implementado foi de Y. Ou seja, o FCFS exigiu Z vezes mais trabalho do que o algoritmo implementado.
-
-
-
+| OPERAÇÃO     | Quantidade total | Distância total percorrida|
+|--------------|------------------|---------------------------|
+| ADD          | 160              | 116618744                 |
+| DSP          | 160              | 33607128                  |
 
 
 ## Autora
