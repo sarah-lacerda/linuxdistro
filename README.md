@@ -2,7 +2,7 @@
 
 
 
-Este relatório descreve o processo básico usado para desenvolver o trabalho prático 2 da disciplina de Laboratório de Sistemas Operacionais (CC). Este trabalho consiste na implementação de um escalonador de disco, baseado no algoritmo de SSTF (Shortest Seek Time First). O escalonador deve ser implementado como um módulo compatível com o Linux kernel 4.13.9. Após a implementação desse algoritmo, o desempenho do mesmo deve ser comparado com o desempenho de um algoritmo de First Come, First Served.
+Este relatório descreve o processo básico usado para desenvolver o trabalho prático 2 da disciplina de Laboratório de Sistemas Operacionais (CC). Este trabalho consiste na implementação de um escalonador de disco, baseado no algoritmo de SSTF (Shortest Seek Time First). O escalonador deve ser implementado como um módulo compatível com o Linux kernel `4.13.9`. Após a implementação desse algoritmo, o desempenho do mesmo deve ser comparado com o desempenho de um algoritmo de First Come, First Served. A análise de desenpenho está presente no final deste relatório
 
 
 
@@ -26,12 +26,12 @@ A implementação do escalonador foi com ponto de partida no esqueleto de códig
 
 
 
-Essa função é responsável por determinar qual é o próximo request de acesso ao disco que será processado (seguindo as regras do algoritmo SSTF). A implememtação considerou que o disco é um vetor simples, com início e final que não estão conectados entre si. Assim, caso o cabeçote do disco esteja na última posição e precise acessar a primeira posição, ele terá de cruzar todo o disco. Uma implementação diferente também é sugerida mais abaixo.
+Essa função é responsável por determinar qual é a próxima requisição de acesso ao disco que será processado (seguindo as regras do algoritmo SSTF). A implememtação considerou que o disco é um vetor simples, com início e final que não estão conectados entre si. Assim, caso o cabeçote do disco esteja na última posição e precise acessar a primeira posição, ele terá de cruzar todo o disco. Uma implementação diferente também é sugerida mais abaixo.
 
 Essa função recebe os seguintes argumentos como parâmetro:
 
 * `struct sstf_data *nd` : ponteiro para a struct de dados que encapsula a head da nossa fila `queue` de requests
-* `struct request **next`: ponteiro do ponteiro da struct que representa o proximo request a ser computado pela função. Esse paremetro é um parametro de saída, e é através dele que a função irá retornar o próximo request computado para ser despachado.
+* `struct request **next`: ponteiro do ponteiro da struct que representa o proximo request a ser computado pela função. Esse paremetro é um parametro de saída, e é através dele que a função irá retornar o próximo `request` computado para ser despachado.
 
 
 
@@ -63,7 +63,7 @@ static void sstf_get_next_rq(struct sstf_data *nd, struct request **next){
 }
 ```
 
-A variável `min_blk_distance` é usada para encontrar a distãncia mínima que existirá entre a atual posição do cabeçote e as requisições que estão esperando na fila. Ela é inicializada com o valor máximo de um `long long int` (mesmo tipo de dado utilizado pela representação de setores do disco no kernel) e será atribuída a um novo valor (menor), sempre que for encontrada uma distancia de blocos menor do que a atual durante a iteração pela lista encadeada de requests. A função `list_for_each_safe` é uma função [disponível na especificação de estruturas de dados do kernel Linux](https://github.com/torvalds/linux/blob/master/include/linux/list.h). Essa função itera pela lista de requests, atribuindo o cursor que representa a posição atual da lista ao parâmetro `position`. Após isso, obtemos o request dessa posição da lista através da função `list_entry(...)`, onde passamos a `list_head` representando o cursor da posição atual da lista, a struct de dados que está encapsulando nosso `list_head` (`struct request`) e o nome atribuído a nossa `list_head` dentro da struct `request` (`queuelist`).
+A variável `min_blk_distance` é usada para encontrar a distãncia mínima que existirá entre a atual posição do cabeçote e as requisições que estão esperando na fila. Ela é inicializada com o valor máximo de um `long long int` (mesmo tipo de dado utilizado pela representação de setores do disco no kernel) e será atribuída a um novo valor (menor), sempre que for encontrada uma distancia de blocos menor do que a atual durante a iteração pela lista encadeada de requests. A função `list_for_each_safe` é uma função [disponível na especificação de estruturas de dados do kernel Linux](https://github.com/torvalds/linux/blob/master/include/linux/list.h). Essa função itera pela lista de requests, atribuindo o cursor que representa a posição atual da lista ao parâmetro `position`. Após isso, obtemos o request dessa posição da lista através da função `list_entry(...)`, onde passamos a `list_head` representando o cursor da posição atual da lista (`position`), a struct de dados que está encapsulando nosso `list_head` (`struct request`) e o nome atribuído a nossa `list_head` dentro da struct `request` (`queuelist`).
 Para cada request então presente em nossa fila de requisições, calculamos a distância entre a posição atual do cabeçote e a posição a ser acessada na requisição em questão, com a seguinte fórmula:
 
 
