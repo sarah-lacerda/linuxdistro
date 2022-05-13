@@ -63,7 +63,7 @@ static void sstf_get_next_rq(struct sstf_data *nd, struct request **next){
 }
 ```
 
-A variável `min_blk_distance` é usada para encontrar a distãncia mínima que existirá entre a atual posição do cabeçote e as requisições que estão esperando na fila. Ela é inicializada com o valor máximo de um `long long int` (mesmo tipo de dado utilizado pela representação de setores do disco no kernel) e será atribuída a um novo valor (menor), sempre que for encontrada uma distancia de blocos menor do que a atual durante a iteração pela lista encadeada de requests. A função `list_for_each_safe` é uma função [disponível na especificação de estruturas de dados do kernel Linux](https://github.com/torvalds/linux/blob/master/include/linux/list.h). Essa função itera pela lista de requests, atribuindo o cursor que representa a posição atual da lista ao parâmetro `position`. Após isso, obtemos o request dessa posição da lista através da função `list_entry(...)`, onde passamos a `list_head` representando o cursor da posição atual da lista (`position`), a struct de dados que está encapsulando nosso `list_head` (`struct request`) e o nome atribuído a nossa `list_head` dentro da struct `request` (`queuelist`).
+A variável `min_blk_distance` é usada para encontrar a distância mínima que existirá entre a atual posição do cabeçote e as requisições que estão esperando na fila. Ela é inicializada com o valor máximo de um `long long int` (mesmo tipo de dado utilizado pela representação de setores do disco no kernel) e será atribuída a um novo valor (menor), sempre que for encontrada uma distancia de blocos menor do que a atual durante a iteração pela lista encadeada de requests. A função `list_for_each_safe` é uma função [disponível na especificação de estruturas de dados do kernel Linux](https://github.com/torvalds/linux/blob/master/include/linux/list.h). Essa função itera pela lista de requests, atribuindo o cursor que representa a posição atual da lista ao parâmetro `position`. Após isso, obtemos o request dessa posição da lista através da função `list_entry(...)`, onde passamos a `list_head` representando o cursor da posição atual da lista (`position`), a struct de dados que está encapsulando nosso `list_head` (`struct request`) e o nome atribuído a nossa `list_head` dentro da struct `request` (`queuelist`).
 Para cada request então presente em nossa fila de requisições, calculamos a distância entre a posição atual do cabeçote e a posição a ser acessada na requisição em questão, com a seguinte fórmula:
 
 
@@ -72,7 +72,7 @@ abs(blk_rq_pos(rq) - last_blk_pos_dispatched)
 ```
 
 - A função `blk_rq_pos(..)` é utilizada para obter a posição de um request, passando o mesmo por parâmetro.
-- A variável last_blk_pos_dispatched é uma variavel global que mantém sempre a posição de bloco do ultimo request despachado.
+- A variável `last_blk_pos_dispatched` é uma variavel global que mantém sempre a posição de bloco do ultimo request despachado.
 - O uso do valor absoluto garante que a distância estará em uma mesma escala, seja para uma posição de memória à esquerda ou à direita da posição atual.
 
 O algoritmo então encontra a requisição que possuí a menor distância entre a posição atual e a requisição e salva o endereço dessa requisição na no valor de next, que, em seguida, é utilizada na função `sstf_dispatch`, descrita abaixo.
@@ -219,9 +219,9 @@ Verifique se o comando funcionou:
 ``` bash
 # cat /sys/block/sdb/queue/scheduler
 noop deadline cfq [sstf] 
-`bash`
+```
 
-6- Feito isso, podemos seguir para a execução do nosso programa de testes `sector_read`, que foi compilado e copiado para o diretório `/bin` do sistema:
+7- Finalmente, podemos seguir para a execução do nosso programa de testes `sector_read`, que foi compilado e copiado para o diretório `/bin` do sistema:
 
 ``` bash
 $ sector_read
@@ -232,9 +232,9 @@ No nosso algoritmo escalonador, adicionamos as chamadas de sistema `printk(...)`
 
 # Avaliação de desempenho
 
-Com as mensagens do kernel geradas a partir da execução do escalonador, é possível fazermos a análise de desempenho do algoritmo implementado, quando comparado com uma implementação "First Come First Served". Para isso, foram feitos gráficos que representam a ordem da adição das requisições à fila (que representam como seria o tratamento das requisições por um algoritmo FCFS) e a ordem da execução das requisições pelo algoritmo implementado. Para a amostra demonstrada abaixo, a aplicação de testes foi executada com o valor de `FORKS=4`, ou seja, executando 4 subprocessos adicionais simultaneos e para cada processo para adicionar estresse nas leituras do disco. Os gráficos se encontram nas figuras abaixo, e estão juntadas ao repositório. A análise visual dos gráficos já traz a intuição de que as posições das requisições servidas pelo algoritmo implementado são muito mais próximas uma da outra do que seriam no caso do algoritmo FCFS. As seções do gráfico DSC onde há sequencias que não foram servidas necessáriamente na menor ordem significam que não havia nenhuma requisição adicionada na fila naquele momento especifico.
+Com as mensagens do kernel geradas a partir da execução do escalonador, é possível fazermos a análise de desempenho do algoritmo implementado, quando comparado com uma implementação "First Come First Served". Para isso, foram feitos gráficos que representam a ordem da adição das requisições à fila (que representam como seria o tratamento das requisições por um algoritmo FCFS) e a ordem da execução das requisições pelo algoritmo implementado. Para a amostra demonstrada abaixo, a aplicação de testes foi executada com o valor de `FORKS=4`, ou seja, executando 16 processos simultâneos para adicionar estresse nas leituras do disco. Os gráficos se encontram nas figuras abaixo e estão juntadas ao repositório. A análise visual dos gráficos já traz a intuição de que as posições das requisições servidas pelo algoritmo implementado são muito mais próximas uma da outra do que seriam no caso do algoritmo FCFS.
 
-As saídas utilizadas para a geração dos gráficos abaixo estão juntadas nesse reposítório, no diretório raiz, nomeadas como [add.txt](add.txt) para a sequencia de saídas representando as adições de requisições na fila e [dsp.txt](dsp.txt) para a sequencia de saídas representando os despachos (atendimentos) das requisições da fila.
+As saídas utilizadas para a geração dos gráficos abaixo estão juntadas nesse reposítório, no diretório raiz, nomeadas como [add.txt](add.txt) para a sequência de saídas representando as adições de requisições na fila e [dsp.txt](dsp.txt) para a sequência de saídas representando os despachos (atendimentos) das requisições da fila.
 
 ### Ordem de adições (semlhante a ordem de um algoritmo FCFS)
 ![ADD](add.png)
